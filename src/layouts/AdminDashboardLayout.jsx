@@ -1,13 +1,13 @@
 ﻿import { Outlet } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
-import EmployerSidebar from "../components/dashboard/EmployerSidebar";
+import AdminSidebar from "../components/dashboard/AdminSidebar";
 
-const EmployerDashboardLayout = () => {
+const AdminDashboardLayout = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Navbar />
       <div className="max-w-7xl mx-auto flex">
-        <EmployerSidebar />
+        <AdminSidebar />
         <main className="flex-1 p-6 min-w-0">
           <Outlet />
         </main>
@@ -16,5 +16,5 @@ const EmployerDashboardLayout = () => {
   );
 };
 
-export default EmployerDashboardLayout;
+export default AdminDashboardLayout;
 

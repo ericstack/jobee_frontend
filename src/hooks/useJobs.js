@@ -10,7 +10,7 @@ const useJobs = () => {
   const fetchJobs = async () => {
     try {
       const data = await getJobs();
-
+      
       setJobs(data.jobs);
     } catch (error) {
       console.log(error);

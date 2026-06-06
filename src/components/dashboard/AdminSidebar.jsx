@@ -1,14 +1,15 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { LayoutDashboard, Briefcase, PlusCircle, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, BarChart2, Shield, LogOut } from "lucide-react";
 
 const navItems = [
-  { to: "/employer", label: "Overview", icon: LayoutDashboard, exact: true },
-  { to: "/employer/jobs", label: "My Jobs", icon: Briefcase },
-  { to: "/employer/applicants", label: "Applicants", icon: Users },
+  { to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
+  { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/jobs", label: "All Jobs", icon: Briefcase },
+  { to: "/admin/analytics", label: "Analytics", icon: BarChart2 },
 ];
 
-const EmployerSidebar = () => {
+const AdminSidebar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -28,9 +29,10 @@ const EmployerSidebar = () => {
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col min-h-[calc(100vh-4rem)] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4">
 
-      <div className="mb-4 px-3 py-2">
+      <div className="mb-4 px-3 py-2 flex items-center gap-2">
+        <Shield size={14} className="text-emerald-600 dark:text-emerald-400" />
         <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-          Employer
+          Administration
         </span>
       </div>
 
@@ -61,7 +63,7 @@ const EmployerSidebar = () => {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{user?.name}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role}</p>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium capitalize">{user?.role}</p>
           </div>
         </div>
         <button
@@ -77,5 +79,5 @@ const EmployerSidebar = () => {
   );
 };
 
-export default EmployerSidebar;
+export default AdminSidebar;
 
