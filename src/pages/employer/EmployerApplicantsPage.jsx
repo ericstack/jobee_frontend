@@ -123,7 +123,7 @@ const EmployerApplicantsPage = () => {
               <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Applied For</span>
               <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide w-24">Date</span>
               <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide w-28">Status</span>
-              <span className="w-28" />
+              <span className="w-48" />
             </div>
 
             <div className="divide-y divide-gray-50 dark:divide-gray-800">
@@ -162,12 +162,12 @@ const EmployerApplicantsPage = () => {
                     </span>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 w-28 justify-end">
+                    <div className="flex items-center gap-2 w-48 justify-end shrink-0">
                       {next && (
                         <button
                           disabled={updating === app._id}
                           onClick={() => handleStatusChange(app._id, next.next)}
-                          className="text-xs px-2.5 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950 disabled:opacity-50 transition-colors"
+                          className="text-xs px-2.5 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950 disabled:opacity-50 transition-colors whitespace-nowrap"
                         >
                           {next.label}
                         </button>
@@ -176,7 +176,7 @@ const EmployerApplicantsPage = () => {
                         <button
                           disabled={updating === app._id}
                           onClick={() => handleStatusChange(app._id, "rejected")}
-                          className="text-xs px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50 transition-colors"
+                          className="text-xs px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50 transition-colors whitespace-nowrap"
                         >
                           Reject
                         </button>

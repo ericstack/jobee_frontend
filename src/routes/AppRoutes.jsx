@@ -14,6 +14,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import DashboardHomePage from "../pages/dashboard/DashboardHomePage";
 import ProfilePage from "../pages/dashboard/ProfilePage";
 import ApplicationsPage from "../pages/dashboard/ApplicationsPage";
+import SavedJobsPage from "../pages/dashboard/SavedJobsPage";
 import MyJobsPage from "../pages/dashboard/MyJobsPage";
 
 import EmployerDashboardLayout from "../layouts/EmployerDashboardLayout";
@@ -65,6 +66,7 @@ const AppRoutes = () => {
           <Route index element={<DashboardHomePage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="applications" element={<ApplicationsPage />} />
+          <Route path="saved" element={<SavedJobsPage />} />
           <Route
             path="jobs"
             element={
@@ -89,6 +91,7 @@ const AppRoutes = () => {
           <Route path="jobs/:id" element={<EmployerJobDetailPage />} />
           <Route path="applicants" element={<EmployerApplicantsPage />} />
           <Route path="applicants/:id" element={<EmployerApplicantDetailPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         <Route
