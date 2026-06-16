@@ -1,6 +1,9 @@
-import { Briefcase, Search, PlusCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Briefcase, Search, PlusCircle, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import useJobs from "../../hooks/useJobs";
+import { deleteJob } from "../../api/jobsApi";
 
 const TYPE_STYLES = {
   Permanent:  "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400",
@@ -9,7 +12,29 @@ const TYPE_STYLES = {
 };
 
 const AdminJobsPage = () => {
-  const { jobs, loading } = useJobs();
+  const listFilter = useMemo(() => ({ limit: 100 }), []);
+  const { jobs, loading, fetchJobs } = useJobs(listFilter);
+  const [query, setQuery] = useState("");
+  const [removingId, setRemovingId] = useState(null);
+
+  const q = query.toLowerCase();
+  const filtered = jobs.filter(
+    (j) => !q || j.title?.toLowerCase().includes(q) || j.company?.toLowerCase().includes(q),
+  );
+
+  const handleRemove = async (job) => {
+    if (!window.confirm(`Remove "${job.title}"? This cannot be undone.`)) return;
+    setRemovingId(job._id);
+    try {
+      await deleteJob(job._id);
+      toast.success("Job removed");
+      fetchJobs();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to remove job");
+    } finally {
+      setRemovingId(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -33,7 +58,9 @@ const AdminJobsPage = () => {
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
-              placeholder="Search jobs…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by title or company…"
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
@@ -45,14 +72,16 @@ const AdminJobsPage = () => {
               <div key={i} className="h-12 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
             ))}
           </div>
-        ) : jobs.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-4">
               <Briefcase size={22} className="text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">No jobs yet</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              {jobs.length === 0 ? "No jobs yet" : "No matches"}
+            </h3>
             <p className="text-xs text-gray-400 dark:text-gray-500 max-w-xs">
-              Job listings created by employers will appear here.
+              {jobs.length === 0 ? "Job listings created by employers will appear here." : "Try a different search."}
             </p>
           </div>
         ) : (
@@ -68,14 +97,14 @@ const AdminJobsPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                {jobs.map((job) => (
+                {filtered.map((job) => (
                   <tr key={job._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">{job.title}</td>
                     <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{job.company}</td>
                     <td className="px-6 py-4">
-                      {job.type && (
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${TYPE_STYLES[job.type] || "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
-                          {job.type}
+                      {job.jobType && (
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${TYPE_STYLES[job.jobType] || "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
+                          {job.jobType}
                         </span>
                       )}
                     </td>
@@ -83,7 +112,13 @@ const AdminJobsPage = () => {
                       {job.salary ? `₱${Number(job.salary).toLocaleString()}` : "—"}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-xs text-red-500 dark:text-red-400 hover:underline">Remove</button>
+                      <button
+                        onClick={() => handleRemove(job)}
+                        disabled={removingId === job._id}
+                        className="inline-flex items-center gap-1 text-xs text-red-500 dark:text-red-400 hover:underline disabled:opacity-50"
+                      >
+                        <Trash2 size={12} /> Remove
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -97,4 +132,3 @@ const AdminJobsPage = () => {
 };
 
 export default AdminJobsPage;
-

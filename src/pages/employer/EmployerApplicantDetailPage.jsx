@@ -1,11 +1,12 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import useApplication from "../../hooks/useApplication";
 import { updateApplicationStatus } from "../../api/applicationsApi";
+import { fetchResumeUrl } from "../../api/jobsApi";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import {
   ArrowLeft, Mail, Phone, FileText, Briefcase, MapPin,
-  CheckCircle2, XCircle, Clock, UserCheck, Trophy, ExternalLink,
+  CheckCircle2, XCircle, Clock, UserCheck, Trophy, ExternalLink, Loader2,
 } from "lucide-react";
 
 const STATUS_STYLES = {
@@ -64,6 +65,19 @@ const EmployerApplicantDetailPage = () => {
   const navigate = useNavigate();
   const { application, setApplication, loading, error } = useApplication(id);
   const [updating, setUpdating] = useState(false);
+  const [resumeLoading, setResumeLoading] = useState(false);
+
+  const openResume = async (resumePath) => {
+    try {
+      setResumeLoading(true);
+      const url = await fetchResumeUrl(resumePath);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      toast.error("Could not open resume.");
+    } finally {
+      setResumeLoading(false);
+    }
+  };
 
   const handleStatusChange = async (status) => {
     setUpdating(true);
@@ -164,16 +178,16 @@ const EmployerApplicantDetailPage = () => {
               Resume / CV
             </h2>
             {resume ? (
-              <a
-                href={resume}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 rounded-xl text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+              <button
+                type="button"
+                onClick={() => openResume(resume)}
+                disabled={resumeLoading}
+                className="inline-flex items-center gap-2 px-4 py-2.5 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 rounded-xl text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900 disabled:opacity-60 transition-colors"
               >
-                <FileText size={14} />
-                View Resume
-                <ExternalLink size={12} />
-              </a>
+                {resumeLoading ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
+                {resumeLoading ? "Opening…" : "View Resume"}
+                {!resumeLoading && <ExternalLink size={12} />}
+              </button>
             ) : (
               <p className="text-sm text-gray-400 dark:text-gray-500 italic">No resume uploaded.</p>
             )}

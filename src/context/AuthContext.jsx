@@ -18,9 +18,12 @@ export const AuthProvider = ({ children }) => {
 
       setUser(data.user);
     } catch (error) {
-      localStorage.removeItem("token");
-
-      setUser(null);
+      // Only force logout when the token is actually rejected (401).
+      // Transient/network errors shouldn't sign the user out.
+      if (error?.response?.status === 401) {
+        localStorage.removeItem("token");
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -71,6 +74,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         logout,
+        refreshProfile: fetchProfile,
       }}
     >
       {children}

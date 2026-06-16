@@ -1,4 +1,7 @@
-import { Users, Search } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { Users, Search, Trash2 } from "lucide-react";
+import { getUsers, deleteUser } from "../../api/usersApi";
 
 const ROLE_STYLES = {
   user:     "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
@@ -7,7 +10,44 @@ const ROLE_STYLES = {
 };
 
 const AdminUsersPage = () => {
-  const users = [];
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const data = await getUsers({ limit: 1000 });
+      setUsers(data.data || []);
+    } catch {
+      toast.error("Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const handleDelete = async (u) => {
+    if (!window.confirm(`Delete ${u.name} (${u.email})? This cannot be undone.`)) return;
+    setDeletingId(u._id);
+    try {
+      await deleteUser(u._id);
+      setUsers((prev) => prev.filter((x) => x._id !== u._id));
+      toast.success("User deleted");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to delete user");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const q = query.toLowerCase();
+  const filtered = users.filter(
+    (u) => !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q) || u.role?.toLowerCase().includes(q),
+  );
 
   return (
     <div className="space-y-6">
@@ -27,20 +67,30 @@ const AdminUsersPage = () => {
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
-              placeholder="Search users…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, email, or role…"
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
         </div>
 
-        {users.length === 0 ? (
+        {loading ? (
+          <div className="p-6 space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-12 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-4">
               <Users size={22} className="text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">No users yet</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              {users.length === 0 ? "No users yet" : "No matches"}
+            </h3>
             <p className="text-xs text-gray-400 dark:text-gray-500 max-w-xs">
-              Registered users will appear here once people start signing up.
+              {users.length === 0 ? "Registered users will appear here." : "Try a different search."}
             </p>
           </div>
         ) : (
@@ -56,7 +106,7 @@ const AdminUsersPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                {users.map((u) => (
+                {filtered.map((u) => (
                   <tr key={u._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -72,9 +122,17 @@ const AdminUsersPage = () => {
                         {u.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-400 dark:text-gray-500">{new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-gray-400 dark:text-gray-500">
+                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
+                    </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-xs text-red-500 dark:text-red-400 hover:underline">Suspend</button>
+                      <button
+                        onClick={() => handleDelete(u)}
+                        disabled={deletingId === u._id}
+                        className="inline-flex items-center gap-1 text-xs text-red-500 dark:text-red-400 hover:underline disabled:opacity-50"
+                      >
+                        <Trash2 size={12} /> Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -88,4 +146,3 @@ const AdminUsersPage = () => {
 };
 
 export default AdminUsersPage;
-

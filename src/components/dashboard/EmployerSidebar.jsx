@@ -1,11 +1,12 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { LayoutDashboard, Briefcase, PlusCircle, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Briefcase, Users, User, LogOut } from "lucide-react";
 
 const navItems = [
   { to: "/employer", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/employer/jobs", label: "My Jobs", icon: Briefcase },
   { to: "/employer/applicants", label: "Applicants", icon: Users },
+  { to: "/employer/profile", label: "Profile", icon: User },
 ];
 
 const EmployerSidebar = () => {

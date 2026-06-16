@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import useAdminStats from "../../hooks/useAdminStats";
 import { Users, Briefcase, FileText, TrendingUp, ArrowRight, Shield, Activity } from "lucide-react";
 
 const StatCard = ({ label, value, icon: Icon, light, dark, change }) => (
@@ -21,6 +22,11 @@ const StatCard = ({ label, value, icon: Icon, light, dark, change }) => (
 
 const AdminHomePage = () => {
   const { user } = useAuth();
+  const { loading, totalUsers, employers, totalJobs, totalApplications, newUsersToday, users } = useAdminStats();
+  const show = (n) => (loading ? "—" : n);
+  const recentUsers = [...users]
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, 5);
 
   return (
     <div className="space-y-8">
@@ -38,13 +44,13 @@ const AdminHomePage = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Users" value="0" icon={Users} change="+0 today"
+        <StatCard label="Total Users" value={show(totalUsers)} icon={Users} change={loading ? null : `+${newUsersToday} today`}
           light="bg-emerald-50 text-emerald-600" dark="dark:bg-emerald-950 dark:text-emerald-400" />
-        <StatCard label="Employers" value="0" icon={TrendingUp}
+        <StatCard label="Employers" value={show(employers)} icon={TrendingUp}
           light="bg-blue-50 text-blue-600" dark="dark:bg-blue-950 dark:text-blue-400" />
-        <StatCard label="Active Jobs" value="0" icon={Briefcase}
+        <StatCard label="Active Jobs" value={show(totalJobs)} icon={Briefcase}
           light="bg-emerald-50 text-emerald-600" dark="dark:bg-emerald-950 dark:text-emerald-400" />
-        <StatCard label="Total Applications" value="0" icon={FileText}
+        <StatCard label="Total Applications" value={show(totalApplications)} icon={FileText}
           light="bg-amber-50 text-amber-600" dark="dark:bg-amber-950 dark:text-amber-400" />
       </div>
 
@@ -54,15 +60,42 @@ const AdminHomePage = () => {
             <h2 className="font-semibold text-gray-900 dark:text-gray-100">Recent Activity</h2>
             <span className="text-xs text-gray-400 dark:text-gray-500">Last 24 hours</span>
           </div>
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-3">
-              <Activity size={20} className="text-gray-400 dark:text-gray-500" />
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3 animate-pulse">
+                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full shrink-0" />
+                  <div className="flex-1 h-3.5 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
+                </div>
+              ))}
             </div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">No recent activity</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              Platform activity will appear here once users start signing up and posting jobs.
-            </p>
-          </div>
+          ) : recentUsers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-3">
+                <Activity size={20} className="text-gray-400 dark:text-gray-500" />
+              </div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">No recent activity</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {recentUsers.map((u) => (
+                <div key={u._id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-xs font-bold shrink-0">
+                    {u.name?.[0]?.toUpperCase() || "?"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                      {u.name} <span className="text-xs text-gray-400 capitalize">· {u.role}</span>
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{u.email}</p>
+                  </div>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                    {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
